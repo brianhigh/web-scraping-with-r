@@ -30,4 +30,5 @@ get_pollen <- function(zip = 98104, days = '30') {
 }
 
 # Get historical pollen index for a specific zip code and number of days.
+# Note: Maximum "days" provided by data source appears to be 365.
 get_pollen(zip = '98105', days = '60')
