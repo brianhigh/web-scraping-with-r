@@ -4,7 +4,7 @@
 
 # Load packages.
 if (!require(pacman)) {
-  install.packages('pacman', repos = 'http://cran.r-project.org')
+  install.packages('pacman', repos = 'http://cran.us.r-project.org')
 }
 pacman::p_load(RCurl, jsonlite)
 
