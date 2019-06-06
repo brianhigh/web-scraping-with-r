@@ -31,7 +31,7 @@ get_AQI <- function(stateid = '49') {
   return(df)
 }
 
-# Get the current AQI by cities for the state of Washington
+# Get the current AQI for various cities in the state of Washington.
 states <- get_states()
 stateid <- states %>% filter(state == "Washington") %>% pull(stateid)
 get_AQI(stateid = stateid)
