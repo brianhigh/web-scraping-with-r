@@ -17,7 +17,7 @@ get_pollen <- function(zip = 98104, days = '30') {
   useragent <- 'Mozilla/5.0'
     
   # Get data.
-  URL <- paste(base_url, 'api', forecast_Path, zip, days, sep = '/')
+  URL <- paste(base_url, 'api', forecast_path, zip, days, sep = '/')
   json_data <- getURL(URL, referer = referer, useragent = useragent)
   pollen <- fromJSON(json_data)$Location$periods
   
