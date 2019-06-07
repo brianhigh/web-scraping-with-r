@@ -1,6 +1,7 @@
 # Filename: getAQI.R
 # Author: Brian High
 # Date: 2019-06-06
+# License: See LICENSE file. See also: https://opensource.org/licenses/MIT
 
 # Clear workspace of all objects and unload all extra (non-base) packages
 rm(list = ls(all = TRUE))

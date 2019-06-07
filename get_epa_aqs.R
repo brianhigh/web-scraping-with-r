@@ -1,6 +1,7 @@
 # Filename: get_epa_aqs.R
 # Author: Brian High
 # Date: 2019-06-06
+# License: See LICENSE file. See also: https://opensource.org/licenses/MIT
 
 # Use the EPA AQS API to get air quality data. This uses the API directly, as 
 # an alternative to using the ebailey78/raqdm package as found on on Github, 
@@ -18,7 +19,7 @@ if (!is.null(sessionInfo()$otherPkgs)) {
 if (!require(pacman)) {
   install.packages('pacman', repos = 'http://cran.us.r-project.org')
 }
-pacman::p_load(config, dplyr, jsonlite, utils)
+pacman::p_load(config, jsonlite)
 
 # Import config file, if present.
 config_file <- file.path("~", "epa_aqs_config.yml")
@@ -114,4 +115,3 @@ df <- get_data(config, param_code, bdate, edate, state_code, county_code)
 
 # Since we really only want one day's data right now, filter out other days.
 df <- df[df$date_local == '2015-05-01', ]
-
