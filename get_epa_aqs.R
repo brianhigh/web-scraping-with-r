@@ -26,7 +26,7 @@ if (file.exists(config_file)) {
   config <- config::get(file = config_file)
 } else {
   # Use test api email and key, if config file is not present.
-  config <- list(email="test@aqs.api", key="test")
+  config <- list(email = "test@aqs.api", key = "test")
 }
 
 # ----------------
@@ -44,27 +44,27 @@ get_url <- function(config, page = 'list/states', query_string = '') {
 # Get states.
 get_states <- function(config) {
   url <- get_url(config, page = 'list/states')
-  jsonlite::fromJSON(url)$Data
+  return(jsonlite::fromJSON(url)$Data)
 }
 
 # Get counties for a state code.
 get_counties <- function(config, state_code) {
   url <- get_url(config, page = 'list/countiesByState', 
                  query_string = paste('state', state_code, sep = '='))
-  jsonlite::fromJSON(url)$Data
+  return(jsonlite::fromJSON(url)$Data)
 }
 
 # Get classes.
 get_classes <- function(config) {
   url <- get_url(config, page = 'list/classes')
-  jsonlite::fromJSON(url)$Data
+  return(jsonlite::fromJSON(url)$Data)
 }
 
 # Get parameters for a class code.
 get_params <- function(config, class_code) {
   url <- get_url(config, page = 'list/parametersByClass', 
                  query_string = paste('pc', URLencode(class_code), sep = '='))
-  jsonlite::fromJSON(url)$Data
+  return(jsonlite::fromJSON(url)$Data)
 }
 
 # Get data for a parameter code, date range, county code, and state code.
@@ -73,7 +73,7 @@ get_data <- function(config, param_code, bdate, edate, state_code, county_code) 
                 state = state_code, county = county_code)
   query_string <- paste(names(query), query, sep = "=", collapse = "&")
   url <- get_url(config, 'sampleData/byCounty', query_string)
-  jsonlite::fromJSON(url)$Data
+  return(jsonlite::fromJSON(url)$Data)
 }
 
 
