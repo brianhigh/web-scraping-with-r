@@ -2,6 +2,14 @@
 # Author: Brian High
 # Date: 2019-06-06
 
+# Clear workspace of all objects and unload all extra (non-base) packages
+rm(list = ls(all = TRUE))
+if (!is.null(sessionInfo()$otherPkgs)) {
+  res <- suppressWarnings(
+    lapply(paste('package:', names(sessionInfo()$otherPkgs), sep=""),
+           detach, character.only=TRUE, unload=TRUE, force=TRUE))
+}
+
 # Load packages.
 if (!require(pacman)) {
   install.packages('pacman', repos = 'http://cran.us.r-project.org')
