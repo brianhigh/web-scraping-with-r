@@ -7,6 +7,10 @@
 # an alternative to using the ebailey78/raqdm package as found on on Github, 
 # which is no longer maintained and will not install into recent versions of R.
 
+# -----
+# Setup
+# -----
+
 # Clear workspace of all objects and unload all extra (non-base) packages
 rm(list = ls(all = TRUE))
 if (!is.null(sessionInfo()$otherPkgs)) {
@@ -21,97 +25,97 @@ if (!require(pacman)) {
 }
 pacman::p_load(config, jsonlite, ggplot2)
 
-# Import config file, if present.
-config_file <- file.path("~", "epa_aqs_config.yml")
-if (file.exists(config_file)) {
-  config <- config::get(file = config_file)
-} else {
-  # Use test api email and key, if config file is not present.
-  config <- list(email = "test@aqs.api", key = "test")
-}
-
 # ----------------
 # Define Functions
 # ----------------
 
-# Form a URL for use with EPA AQS API.
-get_url <- function(config, page = 'list/states', query_string = '') {
-  url <- paste(paste0('https://aqs.epa.gov/data/api/', page, '?'), 
-               paste('email', config$email, sep = '='), 
-               paste('key', config$key, sep = '='), query_string, sep = '&')
-  return(url)
+# Get configuration parameters.
+get_config <- function(config_file = file.path("~", "epa_aqs_config.yml"),
+                       email = "test@aqs.api", key = "test") {
+  # Import config file, if present.
+  if (file.exists(config_file)) {
+    config <- config::get(file = config_file)
+  } else {
+    # Use test api email and key, if config file is not present.
+    config <- list(email = email, key = key)
+  }
+  return(config)
 }
 
-# Get states.
-get_states <- function(config) {
-  url <- get_url(config, page = 'list/states')
-  return(jsonlite::fromJSON(url)$Data)
+# Create a URL.
+create_url <- function(base_url, page, query_string = '') {
+  return(paste(paste0(base_url, page, '?'), query_string, sep = '&'))
 }
 
-# Get counties for a state code.
-get_counties <- function(config, state_code) {
-  url <- get_url(config, page = 'list/countiesByState', 
-                 query_string = paste('state', state_code, sep = '='))
-  return(jsonlite::fromJSON(url)$Data)
-}
-
-# Get classes.
-get_classes <- function(config) {
-  url <- get_url(config, page = 'list/classes')
-  return(jsonlite::fromJSON(url)$Data)
-}
-
-# Get parameters for a class code.
-get_params <- function(config, class_code) {
-  url <- get_url(config, page = 'list/parametersByClass', 
-                 query_string = paste('pc', URLencode(class_code), sep = '='))
-  return(jsonlite::fromJSON(url)$Data)
-}
-
-# Get data for a parameter code, date range, county code, and state code.
-get_data <- function(config, param_code, bdate, edate, state_code, county_code) {
-  query <- list(param = param_code, bdate = bdate, edate = edate, 
-                state = state_code, county = county_code)
+# Get data from API.
+get_data <- function(base_url = 'https://aqs.epa.gov/data/api/', page, query) {
   query_string <- paste(names(query), query, sep = "=", collapse = "&")
-  url <- get_url(config, 'sampleData/byCounty', query_string)
+  url <- create_url(base_url, page, query_string)
   return(jsonlite::fromJSON(url)$Data)
 }
 
+# Get sample data by county and parameter from API.
+get_sample_data_by_county_and_parameter <-
+  function(config, state_name, county_name, class_name, param_name, 
+           start_date, end_date) {
+  # Define lists to use for constructing the query string.
+  base_query <- list(email = URLencode(config$email), 
+                     key = URLencode(config$key))
+  location_query <- list()
+  param_query <- list()
+  date_query <- list()
+    
+  # Get state code.
+  states <- get_data(page = 'list/states', query = base_query)
+  location_query$state <- URLencode(
+    states[states$value_represented == state_name, 'code'])
+  
+  # Get county code.
+  query <- append(base_query, location_query)
+  counties <- get_data(page = 'list/countiesByState', query = query)
+  location_query$county <- URLencode(
+    counties[counties$value_represented == county_name, 'code'])
+  
+  # Get parameter class code.
+  classes <- get_data(page = 'list/classes', query = base_query)
+  param_query$pc <- URLencode(
+    classes[classes$value_represented == class_name, 'code'])
+  
+  # Get parameter code.
+  query <- append(base_query, param_query)
+  params <- get_data(page = 'list/parametersByClass', query = query)
+  param_query$param <- URLencode(
+    params[params$value_represented == param_name, 'code'])
+  
+  # Now we have enough codes to actually get the data we want...
+  
+  # Define the start date and end date for the timespan we want data for.
+  # For one day's data, use the next day as the end date (edate).
+  date_query$bdate <- URLencode(start_date)
+  date_query$edate <- URLencode(end_date)
+  
+  # Combine query variables
+  query <- append(base_query, append(location_query, date_query))
+  query$param <- param_query$param
+  
+  # Get sample data.
+  return(get_data(page = 'sampleData/byCounty', query = query))
+}
 
 # ------------
 # Main Routine
 # ------------
 
-# To get data, we first need to look up codes for state, county, parameter 
-# class and parameters...
-
-# Get state code for Washington.
-states <- get_states(config)
-state_code <- states[states$value_represented == 'Washington', 'code']
-
-# Get county code for "King" county in Washington.
-counties <- get_counties(config, state_code)
-county_code <- counties[counties$value_represented == "King", 'code']
-
-# Get PM2.5 parameters for "PM2.5 Mass and QA Parameters" class.
-classes <- get_classes(config)
-class_code <- classes[
-  classes$value_represented == "PM2.5 Mass and QA Parameters", 'code']
-params <- get_params(config, class_code)
-
-# Get "PM2.5 - Local Conditions" parameter code.
-param_code <- params[
-  params$value_represented == "PM2.5 - Local Conditions", 'code']
-
-# Now we have enough codes to actually get the data we want...
-
-# Define the start date and end date for the timespan we want data for.
-# For one day's data, use the next day as the end date (edate).
-bdate <- '20150501'
-edate <- '20150502'
-
-# Get PM2.5 data for King County, Washington on 2019-05-01.
-df <- get_data(config, param_code, bdate, edate, state_code, county_code)
+# Get sample data from API.
+df <- get_sample_data_by_county_and_parameter(
+  config = get_config(),
+  state_name = 'Washington',
+  county_name = 'King',
+  class_name = 'PM2.5 Mass and QA Parameters',
+  param_name = 'PM2.5 - Local Conditions',
+  start_date = '20150501',
+  end_date = '20150502'
+)
 
 # Clean up data.
 
@@ -130,3 +134,4 @@ ggplot(df, aes(x = datetime, y = sample_measurement)) + geom_point() +
   stat_smooth(method = 'loess') + ylab('PM2.5') + 
   ggtitle('Hourly PM2.5 on 2015-01-01 in King County, WA', 
           subtitle = 'Data source: EPA AQS Datamart, https://aqs.epa.gov/api')
+
