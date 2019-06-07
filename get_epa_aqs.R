@@ -19,7 +19,7 @@ if (!is.null(sessionInfo()$otherPkgs)) {
 if (!require(pacman)) {
   install.packages('pacman', repos = 'http://cran.us.r-project.org')
 }
-pacman::p_load(config, jsonlite)
+pacman::p_load(config, jsonlite, ggplot2)
 
 # Import config file, if present.
 config_file <- file.path("~", "epa_aqs_config.yml")
@@ -113,5 +113,20 @@ edate <- '20150502'
 # Get PM2.5 data for King County, Washington on 2019-05-01.
 df <- get_data(config, param_code, bdate, edate, state_code, county_code)
 
+# Clean up data.
+
 # Since we really only want one day's data right now, filter out other days.
 df <- df[df$date_local == '2015-05-01', ]
+
+# Combine date and time to make a timestamp variable (for plotting).
+df$datetime <- as.POSIXct(paste(df$date_local, df$time_local, sep = " "))
+
+# Remove extra variables and rows with NAs.
+df <- df[, c('datetime', 'sample_measurement')]
+df <- df[complete.cases(df),]
+
+# Plot data.
+ggplot(df, aes(x = datetime, y = sample_measurement)) + geom_point() + 
+  stat_smooth(method = 'loess') + ylab('PM2.5') + 
+  ggtitle('Hourly PM2.5 on 2015-01-01 in King County, WA', 
+          subtitle = 'Data source: EPA AQS Datamart, https://aqs.epa.gov/api')
