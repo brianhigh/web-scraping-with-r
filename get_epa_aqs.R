@@ -87,8 +87,6 @@ get_sample_data_by_county_and_parameter <-
   param_query$param <- URLencode(
     params[params$value_represented == param_name, 'code'])
   
-  # Now we have enough codes to actually get the data we want...
-  
   # Define the start date and end date for the timespan we want data for.
   # For one day's data, use the next day as the end date (edate).
   date_query$bdate <- URLencode(start_date)
