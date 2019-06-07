@@ -1,7 +1,8 @@
 # Filename: get_pollen_history.R
 # Author: Brian High
 # Date: 2019-06-06
-# License: See LICENSE file. See also: https://opensource.org/licenses/MIT
+# License: MIT https://opensource.org/licenses/MIT (See LICENSE file.)
+# Repository: https://github.com/brianhigh/web-scraping-with-r
 
 # Clear workspace of all objects and unload all extra (non-base) packages
 rm(list = ls(all = TRUE))

@@ -1,7 +1,8 @@
 # Filename: get_epa_aqs.R
 # Author: Brian High
 # Date: 2019-06-06
-# License: See LICENSE file. See also: https://opensource.org/licenses/MIT
+# License: MIT https://opensource.org/licenses/MIT (See LICENSE file.)
+# Repository: https://github.com/brianhigh/web-scraping-with-r
 
 # Use the EPA AQS API to get air quality data. This uses the API directly, as 
 # an alternative to using the ebailey78/raqdm package as found on on Github, 
