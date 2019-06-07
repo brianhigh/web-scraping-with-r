@@ -127,6 +127,9 @@ df$datetime <- as.POSIXct(paste(df$date_local, df$time_local, sep = " "))
 df <- df[, c('datetime', 'sample_measurement')]
 df <- df[complete.cases(df),]
 
+# Get mean of PM2.5 for each timestamp.
+df <- aggregate(sample_measurement ~ datetime, df, mean)
+
 # Plot data.
 ggplot(df, aes(x = datetime, y = sample_measurement)) + geom_point() + 
   stat_smooth(method = 'loess') + ylab('PM2.5') + 
