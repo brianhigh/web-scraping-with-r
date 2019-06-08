@@ -12,6 +12,9 @@
 # multiple states, fetching results for each state and then combine them. The 
 # code below does this for 5 states in the Pacific Northwest region of the USA.
 
+# Note: While the CDC ELF website offers a button to download the data as a 
+# file, we found that difficult to script, so we extract the HTML table instead.
+
 # -----
 # Setup
 # -----
