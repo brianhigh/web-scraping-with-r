@@ -19,7 +19,7 @@
 # Setup
 # -----
 
-# Clear workspace of all objects and unload all extra (non-base) packages
+# Clear workspace of all objects and unload all extra (non-base) packages.
 rm(list = ls(all = TRUE))
 if (!is.null(sessionInfo()$otherPkgs)) {
   res <- suppressWarnings(

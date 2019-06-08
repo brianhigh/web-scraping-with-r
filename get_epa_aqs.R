@@ -1,6 +1,6 @@
 # Filename: get_epa_aqs.R
 # Author: Brian High
-# Date: 2019-06-06
+# Date: 2019-06-07
 # License: MIT https://opensource.org/licenses/MIT (See LICENSE file.)
 # Repository: https://github.com/brianhigh/web-scraping-with-r
 
@@ -12,7 +12,7 @@
 # Setup
 # -----
 
-# Clear workspace of all objects and unload all extra (non-base) packages
+# Clear workspace of all objects and unload all extra (non-base) packages.
 rm(list = ls(all = TRUE))
 if (!is.null(sessionInfo()$otherPkgs)) {
   res <- suppressWarnings(
