@@ -53,14 +53,13 @@ get_data <- function(query) {
   # Clean Data.
   df <- df %>% 
     filter(Year != 'Year', 
-           !grepl('Age|Subtotal', Age), 
+           !grepl('Age|Subtotal|:', Age), 
            !grepl('Male|FTE', Male), 
            !grepl('Female|FTE', Female))  %>% 
     mutate(Keep = ifelse(!is.na(Keep), FALSE, TRUE)) %>% 
     mutate_all(na_if, "") %>% 
     mutate(Year = na.locf(Year)) %>% 
     filter(Keep) %>% select(-Keep) %>% 
-    filter(!grepl(':', Age)) %>% 
     mutate(Male = as.numeric(gsub(',', '', Male)),
            Female = as.numeric(gsub(',', '', Female)))
     df$Age <- as.factor(df$Age)
