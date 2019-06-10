@@ -3,6 +3,8 @@
 # License: MIT https://opensource.org/licenses/MIT (See LICENSE file.)
 # Repository: https://github.com/brianhigh/web-scraping-with-r
 
+# Get Air Quality Index (AQI) from EPA's "Airnow" site (airnow.gov).
+
 # Clear workspace of all objects and unload all extra (non-base) packages.
 rm(list = ls(all = TRUE))
 if (!is.null(sessionInfo()$otherPkgs)) {
