@@ -14,7 +14,7 @@ if (!is.null(sessionInfo()$otherPkgs)) {
 }
 
 # Load packages.
-if (!require(pacman)) {
+if (! suppressPackageStartupMessages(require(pacman))) {
   install.packages('pacman', repos = 'http://cran.us.r-project.org')
 }
 pacman::p_load(dplyr, httr, rvest)
@@ -37,12 +37,41 @@ get_AQI <- function(stateid = '49') {
   pg <- content(res, as = 'text', encoding = 'utf-8') %>% read_html()
   tbls_ls <- pg %>% html_nodes(".TblInvisible") %>% html_table(fill = TRUE)
   mat <- matrix(tbls_ls[[1]][6:287, "X1"], ncol = 6, byrow = TRUE)[, c(1, 6)]
-  df <- as_tibble(mat)
-  names(df)  <- c('location', 'current_aqi')
+  df <- as_tibble(mat, .name_repair = 'minimal')
+  names(df)  <- c('location', 'aqi')
   return(df)
 }
 
+# Define variables.
+data_dir <- 'data'
+my_state <- 'Washington'
+
+# Create data folder if it does not exist.
+dir.create(data_dir, showWarnings = FALSE)
+
+# Get a dataset of states and state IDs.
+states_path <- file.path(data_dir, 'states.csv')
+if (!file.exists(states_path)) {
+  states <- get_states()
+  write.csv(states, states_path, row.names = FALSE)
+} else {
+  states <- read.csv(states_path)
+}
+
 # Get the current AQI for various cities in the state of Washington.
-states <- get_states()
-stateid <- states %>% filter(state == "Washington") %>% pull(stateid)
-get_AQI(stateid = stateid)
+stateid <- states %>% filter(state == my_state) %>% pull(stateid)
+df <- get_AQI(stateid = stateid) %>% 
+  mutate(state = my_state, datetime = Sys.time()) %>% 
+  select(datetime, state, location, aqi)
+
+# Append the current AQI data to a file to accumulate results over time.
+aqi_data_path <- file.path(data_dir, paste(my_state, 'aqi.csv', sep = '_'))
+
+# Write header if data file does not exist.
+if (! file.exists(aqi_data_path)) {
+  write.table(df, aqi_data_path, sep = ',', row.names = FALSE)
+} else {
+  # Otherwise, append data to previous records with no header.
+  write.table(df, aqi_data_path, append = TRUE, sep = ',', 
+              row.names = FALSE, col.names = FALSE)
+}
