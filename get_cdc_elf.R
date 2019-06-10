@@ -1,6 +1,5 @@
 # Filename: get_cdc_elf.R
-# Author: Brian High
-# Date: 2019-06-07
+# Copyright (c) University of Washington
 # License: MIT https://opensource.org/licenses/MIT (See LICENSE file.)
 # Repository: https://github.com/brianhigh/web-scraping-with-r
 
