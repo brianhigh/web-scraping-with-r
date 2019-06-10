@@ -3,13 +3,14 @@
 # License: MIT https://opensource.org/licenses/MIT (See LICENSE file.)
 # Repository: https://github.com/brianhigh/web-scraping-with-r
 
-# Use the CDC ELF website to get labor force data. While this would take 
-# longer to code than manually downloading a few datasets, it could be a 
-# worthwhile approach to automate downloading many similar datasets. Since the 
-# website only lets you choose a few grouping parameters, you could automate
-# collection of data for more parameters. For example, you could loop through 
-# multiple states, fetching results for each state and then combine them. The 
-# code below does this for 5 states in the Pacific Northwest region of the USA.
+# Use the CDC Employed Labor Force (ELF)  website to get labor force data. 
+# While this would take longer to code than manually downloading a few datasets, 
+# it could be a worthwhile approach to automate downloading many similar 
+# datasets. Since the website only lets you choose a few grouping parameters, 
+# you could automate collection of data for more parameters. For example, you 
+# could loop through multiple states, fetching results for each state and then 
+# combine them. The code below does this for 5 states in the Pacific Northwest 
+# region of the USA.
 
 # Note: While the CDC ELF website offers a button to download the data as a 
 # file, we found that difficult to script, so we extract the HTML table instead.
@@ -37,8 +38,8 @@ pacman::p_load(dplyr, httr, rvest, xts)
 # Define Functions
 # ----------------
 
-get_data <- function(query) {
-  # Get Data
+get_cdc_elf_data <- function(query) {
+  # Get CDC ELF Data
   url <- 'https://wwwn.cdc.gov/wisards/cps/cps_estimates_results.aspx'
   referer <- 'https://wwwn.cdc.gov/wisards/cps/cps_estimates.aspx'
   useragent <- 'Mozilla/5.0'
@@ -113,7 +114,7 @@ state_fips <- tibble(State = c('AK', 'ID', 'MT', 'OR', 'WA'),
 df <- bind_rows(lapply(1:nrow(state_fips), function(x) {
   # Add state FIPS code as a query parameter.
   query$StateFipsCodeID <- state_fips$StateFipsCodeID[x]
-  get_data(query)
+  get_cdc_elf_data(query)
 }))
 
 # Merge with FIPS codes dataframe to get state abbreviation.
