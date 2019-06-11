@@ -31,7 +31,7 @@ if (!is.null(sessionInfo()$otherPkgs)) {
 if (!require(pacman)) {
   install.packages('pacman', repos = 'http://cran.us.r-project.org')
 }
-pacman::p_load(dplyr, readxl, httr, rvest, xts)
+pacman::p_load(dplyr, httr, rvest, xts)
 
 
 # ----------------
@@ -39,16 +39,13 @@ pacman::p_load(dplyr, readxl, httr, rvest, xts)
 # ----------------
 
 # Get a table of states and their fips codes to facilitate lookup.
-get_states <- function(data_dir, states = NULL) {
-  url <- paste('https://www2.census.gov/programs-surveys/popest/geographies',
-               '2018/all-geocodes-v2018.xlsx', sep = "/")
-  fips_path <- file.path(data_dir, 'fips_codes.xlsx')
-  if (!file.exists(fips_path)) download.file(url, destfile = fips_path)
-  df <- read_xlsx(fips_path, skip = 3) %>% 
-    filter(`Summary Level` == '040') %>% 
-    select(c(2, 7))
-  names(df) <- c('StateFipsCodeID', 'State')
-  if (!is.null(states)) df <- df %>% filter(State %in% states)
+get_states <- function() {
+  url <- 'https://wwwn.cdc.gov/wisards/cps/cps_estimates.aspx'
+  pg <- read_html(url)
+  select_opts <- pg %>% html_nodes("select#StateFipsCodeID") %>% html_nodes("option")
+  state <- select_opts %>% html_text() %>% trimws()
+  stateid <- select_opts %>% html_attr('value')
+  df <- tibble(State = state, StateFipsCodeID = stateid)
   return(df)
 }
 
@@ -120,14 +117,10 @@ query <- list(
 )
 
 # Define variables.
-data_dir <- 'data'
 states <- c('Alaska', 'Idaho', 'Montana', 'Oregon', 'Washington')
 
-# Create data folder if it does not exist.
-dir.create(data_dir, showWarnings = FALSE)
-
 # Find FIPS codes for states.
-state_fips <- get_states(data_dir, states)
+state_fips <- get_states() %>% filter(State %in% states)
 
 # Get data for each state and combine.
 df <- bind_rows(lapply(1:nrow(state_fips), function(x) {
