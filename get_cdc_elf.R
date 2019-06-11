@@ -31,12 +31,26 @@ if (!is.null(sessionInfo()$otherPkgs)) {
 if (!require(pacman)) {
   install.packages('pacman', repos = 'http://cran.us.r-project.org')
 }
-pacman::p_load(dplyr, httr, rvest, xts)
+pacman::p_load(dplyr, readxl, httr, rvest, xts)
 
 
 # ----------------
 # Define Functions
 # ----------------
+
+# Get a table of states and their fips codes to facilitate lookup.
+get_states <- function(data_dir, states = NULL) {
+  url <- paste('https://www2.census.gov/programs-surveys/popest/geographies',
+               '2018/all-geocodes-v2018.xlsx', sep = "/")
+  fips_path <- file.path(data_dir, 'fips_codes.xlsx')
+  if (!file.exists(fips_path)) download.file(url, destfile = fips_path)
+  df <- read_xlsx(fips_path, skip = 3) %>% 
+    filter(`Summary Level` == '040') %>% 
+    select(c(2, 7))
+  names(df) <- c('StateFipsCodeID', 'State')
+  if (!is.null(states)) df <- df %>% filter(State %in% states)
+  return(df)
+}
 
 get_cdc_elf_data <- function(query) {
   # Get CDC ELF Data
@@ -73,7 +87,6 @@ get_cdc_elf_data <- function(query) {
   return(df)
 }
 
-
 # ------------
 # Main Routine
 # ------------
@@ -106,9 +119,15 @@ query <- list(
   weight = 3
 )
 
-# Define FIPS codes for states.
-state_fips <- tibble(State = c('AK', 'ID', 'MT', 'OR', 'WA'), 
-                     StateFipsCodeID = c('02', '16', '30', '41', '53'))
+# Define variables.
+data_dir <- 'data'
+states <- c('Alaska', 'Idaho', 'Montana', 'Oregon', 'Washington')
+
+# Create data folder if it does not exist.
+dir.create(data_dir, showWarnings = FALSE)
+
+# Find FIPS codes for states.
+state_fips <- get_states(data_dir, states)
 
 # Get data for each state and combine.
 df <- bind_rows(lapply(1:nrow(state_fips), function(x) {
@@ -120,3 +139,4 @@ df <- bind_rows(lapply(1:nrow(state_fips), function(x) {
 # Merge with FIPS codes dataframe to get state abbreviation.
 df <- df %>% inner_join(state_fips, by = 'StateFipsCodeID') %>% 
   select(-StateFipsCodeID)
+
