@@ -35,7 +35,7 @@ url <- 'https://data.wa.gov/api/views/h7j9-vgr3/rows.csv?accessType=DOWNLOAD'
 wa_wqi <- suppressMessages(read_csv(url))
 
 # Look at the structure of the data.
-wa_wqi
+str(wa_wqi)
 
 # Parse location column to get latitude and longitude columns.
 wa_wqi <- wa_wqi %>% 
