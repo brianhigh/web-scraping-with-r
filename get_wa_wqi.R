@@ -43,6 +43,10 @@ wa_wqi <- wa_wqi %>%
   separate(Location.1, c('lon', 'lat'), ' ', convert = TRUE)
   
 
+# Look at the location data.
+options(pillar.sigfig = 7)
+wa_wqi %>% select(`Location 1`, lon, lat)
+
 # ---------- Create map --------------
 
 # Define a boundary box.
