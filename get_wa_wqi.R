@@ -32,7 +32,7 @@ pacman::p_load(dplyr, tidyr, readr, ggmap)
 
 # Import the data.
 url <- 'https://data.wa.gov/api/views/h7j9-vgr3/rows.csv?accessType=DOWNLOAD'
-wa_wqi <- suppressMessages(read_csv(url))
+wa_wqi <- read_csv(url, col_types = cols())
 
 # Look at the structure of the data.
 str(wa_wqi)
