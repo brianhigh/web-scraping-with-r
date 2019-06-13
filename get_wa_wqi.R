@@ -70,7 +70,7 @@ g <- ggmap(map, darken = c(0.3, "white")) + theme_void()
 # Show the map.
 g + geom_point(aes(x = lon, y = lat, fill = WQIFC), 
                data = wa_wqi, pch = 21, size = 3) + 
-  scale_fill_gradient(name = "FCI", low = "green", high = "red") + 
+  scale_fill_gradient(name = "FCI", low = "red", high = "green") + 
   ggtitle(label = paste("Washington State", 
                         "Freshwater Fecal Coliform Index (FCI)", sep = " "),
           subtitle = paste("Source: River and Stream Monitoring Program,", 
