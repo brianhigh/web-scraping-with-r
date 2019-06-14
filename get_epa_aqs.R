@@ -111,28 +111,30 @@ df <- get_sample_data_by_county_and_parameter(
   county_name = 'King',
   class_name = 'PM2.5 Mass and QA Parameters',
   param_name = 'PM2.5 - Local Conditions',
-  start_date = '20150501',
-  end_date = '20150502'
+  start_date = '20180701',
+  end_date = '20180702'
 )
 
-# Clean up data.
+if (class(df) == "data.frame" & nrow(df) > 0) {
 
-# Since we really only want one day's data right now, filter out other days.
-df <- df[df$date_local == '2015-05-01', ]
-
-# Combine date and time to make a timestamp variable (for plotting).
-df$datetime <- as.POSIXct(paste(df$date_local, df$time_local, sep = " "))
-
-# Remove extra variables and rows with NAs.
-df <- df[, c('datetime', 'sample_measurement')]
-df <- df[complete.cases(df),]
-
-# Get mean of PM2.5 for each timestamp.
-df <- aggregate(sample_measurement ~ datetime, df, mean)
-
-# Plot data.
-ggplot(df, aes(x = datetime, y = sample_measurement)) + geom_point() + 
-  stat_smooth(method = 'loess') + ylab('PM2.5') + 
-  ggtitle('Hourly PM2.5 on 2015-01-01 in King County, WA', 
-          subtitle = 'Data source: EPA AQS Datamart, https://aqs.epa.gov/api')
-
+  # Clean up data.
+  
+  # Since we really only want one day's data right now, filter out other days.
+  df <- df[df$date_local == '2018-07-01', ]
+  
+  # Combine date and time to make a timestamp variable (for plotting).
+  df$datetime <- as.POSIXct(paste(df$date_local, df$time_local, sep = " "))
+  
+  # Remove extra variables and rows with NAs.
+  df <- df[, c('datetime', 'sample_measurement')]
+  df <- df[complete.cases(df),]
+  
+  # Get mean of PM2.5 for each timestamp.
+  df <- aggregate(sample_measurement ~ datetime, df, mean)
+  
+  # Plot data.
+  ggplot(df, aes(x = datetime, y = sample_measurement)) + geom_point() + 
+    stat_smooth(method = 'loess') + ylab('PM2.5') + 
+    ggtitle('Hourly PM2.5 on 2018-07-01 in King County, WA', 
+            subtitle = 'Data source: EPA AQS Datamart, https://aqs.epa.gov/api')
+}
