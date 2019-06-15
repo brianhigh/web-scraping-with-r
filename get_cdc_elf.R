@@ -31,7 +31,7 @@ if (!is.null(sessionInfo()$otherPkgs)) {
 if (!require(pacman)) {
   install.packages('pacman', repos = 'http://cran.us.r-project.org')
 }
-pacman::p_load(dplyr, httr, rvest, xts)
+pacman::p_load(dplyr, httr, rvest, xts, tidyr, forcats, ggplot2)
 
 
 # ----------------
@@ -134,3 +134,24 @@ df <- bind_rows(lapply(1:nrow(state_fips), function(x) {
 df <- df %>% inner_join(state_fips, by = 'StateFipsCodeID') %>% 
   select(-StateFipsCodeID)
 
+# Reshape Male and Female into a new Gender variable. Reverse Age factor order. 
+df <- df %>% gather(key = 'Gender', value = 'Count', Male, Female) %>% 
+  mutate(Age = fct_rev(Age))
+
+# Calculate the percent of workers aged over 65 years by state, gender, & year.
+df_over_65 <- df %>% filter(Age %in% c("75+", "70-74", "65-69")) %>% 
+  group_by(State, Gender, Year) %>% summarise(Count = sum(Count))
+df_total <- df %>% 
+  group_by(State, Gender, Year) %>% summarise(Total = sum(Count))
+df_over_65 <- df_total %>% 
+  left_join(df_over_65, by = c('State', 'Gender', 'Year')) %>% 
+  mutate(Pct_Over_65 = 100*Count/Total)
+
+# Make a plot.
+ggplot(df_over_65, aes(x=Year, y=Pct_Over_65, fill=Gender)) + 
+  geom_bar(width = 1, stat = "identity") + 
+  facet_grid(rows = vars(State)) + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+  ggtitle(label = "Percentage of workers age 65 or older in 5 PNW states", 
+          subtitle = "Data Source: CDC Employed Labor Force") + 
+  ylab("Percent (%) of workers age 65 or older") + xlab("Year")
