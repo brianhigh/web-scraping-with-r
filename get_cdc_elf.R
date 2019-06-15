@@ -149,10 +149,10 @@ df_65_and_Older <- df %>%
   mutate(Pct_65_Plus = 100 * Age_65_Plus / (Age_65_Plus + Under_65))
 
 # Make a plot.
-ggplot(df_65_and_Older, aes(x = Year, y = Pct_65_Plus, fill = Gender)) + 
-  geom_bar(width = 1, stat = "identity") + 
-  facet_grid(rows = vars(State)) + 
+ggplot(df_65_and_Older, aes(x = Year, y = Pct_65_Plus, group = Gender)) + 
+  geom_line(aes(color = Gender)) + 
+  facet_grid(rows = vars(State)) + theme_bw() + 
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
-  ggtitle(label = "Percentage of workers age 65 or older in 5 PNW states", 
+  ggtitle(label = "Percentage of workers age 65 or older in five PNW states", 
           subtitle = "Data Source: CDC Employed Labor Force") + 
   ylab("Percent (%) of workers age 65 or older") + xlab("Year")
