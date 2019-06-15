@@ -139,16 +139,17 @@ df <- df %>% gather(key = 'Gender', value = 'Count', Male, Female) %>%
   mutate(Age = fct_rev(Age))
 
 # Calculate the percent of workers aged over 65 years by state, gender, & year.
-df_over_65 <- df %>% filter(Age %in% c("75+", "70-74", "65-69")) %>% 
-  group_by(State, Gender, Year) %>% summarise(Count = sum(Count))
-df_total <- df %>% 
-  group_by(State, Gender, Year) %>% summarise(Total = sum(Count))
-df_over_65 <- df_total %>% 
-  left_join(df_over_65, by = c('State', 'Gender', 'Year')) %>% 
-  mutate(Pct_Over_65 = 100*Count/Total)
+df_65_and_Older <- df %>% 
+  mutate(Age = ifelse(
+    Age %in% c("75+", "70-74", "65-69"), 'Age_65_Plus', 'Under_65')) %>%
+  group_by(State, Gender, Year, Age) %>% 
+  summarise(Count = sum(Count)) %>% 
+  spread(key = Age, value = Count) %>% 
+  group_by(State, Gender, Year) %>% 
+  mutate(Pct_65_Plus = 100 * Age_65_Plus / (Age_65_Plus + Under_65))
 
 # Make a plot.
-ggplot(df_over_65, aes(x=Year, y=Pct_Over_65, fill=Gender)) + 
+ggplot(df_65_and_Older, aes(x = Year, y = Pct_65_Plus, fill = Gender)) + 
   geom_bar(width = 1, stat = "identity") + 
   facet_grid(rows = vars(State)) + 
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
