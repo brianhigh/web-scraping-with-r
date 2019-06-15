@@ -42,7 +42,8 @@ pacman::p_load(dplyr, httr, rvest, xts)
 get_states <- function() {
   url <- 'https://wwwn.cdc.gov/wisards/cps/cps_estimates.aspx'
   pg <- read_html(url)
-  select_opts <- pg %>% html_nodes("select#StateFipsCodeID") %>% html_nodes("option")
+  select_opts <- pg %>% 
+    html_nodes("select#StateFipsCodeID") %>% html_nodes("option")
   state <- select_opts %>% html_text() %>% trimws()
   stateid <- select_opts %>% html_attr('value')
   df <- tibble(State = state, StateFipsCodeID = stateid)
@@ -129,7 +130,7 @@ df <- bind_rows(lapply(1:nrow(state_fips), function(x) {
   get_cdc_elf_data(query)
 }))
 
-# Merge with FIPS codes dataframe to get state abbreviation.
+# Merge with FIPS codes dataframe to get state name.
 df <- df %>% inner_join(state_fips, by = 'StateFipsCodeID') %>% 
   select(-StateFipsCodeID)
 
