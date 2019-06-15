@@ -115,11 +115,10 @@ df <- get_sample_data_by_county_and_parameter(
   end_date = '20180823'
 )
 
+# Clean up data and make a time-series scatter plot.
+
 if (class(df) == "data.frame" & nrow(df) > 0) {
-
-  # Clean up data.
-
-  # Combine date and time to make a timestamp variable (for plotting).
+# Combine date and time to make a timestamp variable (for plotting).
   df$datetime <- as.POSIXct(paste(df$date_local, df$time_local, sep = " "))
   
   # Remove extra variables and rows with NAs.
