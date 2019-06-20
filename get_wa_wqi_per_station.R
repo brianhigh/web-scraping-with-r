@@ -24,7 +24,7 @@ if (!is.null(sessionInfo()$otherPkgs)) {
 if (! suppressPackageStartupMessages(require(pacman))) {
   install.packages('pacman', repos = 'http://cran.us.r-project.org')
 }
-pacman::p_load(dplyr, rvest, readr, ggmap)
+pacman::p_load(dplyr, tidyr, rvest, readr, ggmap)
 
 
 # ---------
@@ -208,9 +208,17 @@ if (!file.exists(file_name)) {
 file_name <- file.path(data_dir, 'station_details.csv')
 if (!file.exists(file_name)) {
   station_details <- bind_rows(lapply(stations$Station, get_station_details))
+  station_details <- station_details %>% 
+    mutate(overall.quality = gsub('^.* (\\w+) concern.*water-year (\\d+).*$', 
+                                  '\\1,\\2', overall.quality)) %>% 
+    separate(overall.quality, c('quality.level', 'quality.year'), ',', 
+             convert = TRUE, remove = FALSE) %>% 
+    select(-map.detail)
   write.csv(station_details, file_name, row.names = FALSE)
 } else {
-  station_details <- read_csv(file_name)
+  station_details <- read_csv(file_name) %>% 
+    mutate(LLID = as.character(LLID),
+           `waterbody.id` = as.character(`waterbody.id`))
 }
 
 # Get WQI data for all stations. Use a cached data file, if present.
