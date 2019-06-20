@@ -72,9 +72,15 @@ get_station_details <- function(Station) {
   # Add a variable for the station.
   stn_det$Station <- Station
   
-  # Rename variables. Fix longitude if not negative.
+  # Rename variables. Force longitude to be negative. Split overall quality.
   stn_det <- stn_det %>% rename('lat' = 'latitude', 'lon' = 'longitude') %>% 
-    mutate(lon = ifelse(lon > 0, -lon, lon))
+    mutate(lon = ifelse(lon > 0, -lon, lon)) %>% 
+    mutate(overall.quality = gsub('^.* (\\w+) concern.*water-year (\\d+).*$', 
+                                  '\\1,\\2', overall.quality)) %>% 
+    separate(overall.quality, c('quality.level', 'quality.year'), ',', 
+             convert = TRUE, remove = FALSE) %>% 
+    select(-map.detail)
+  names(stn_det) <- gsub('[.]+', '.', names(stn_det))
   
   return(stn_det)
 }
@@ -208,15 +214,6 @@ if (!file.exists(file_name)) {
 file_name <- file.path(data_dir, 'station_details.csv')
 if (!file.exists(file_name)) {
   station_details <- bind_rows(lapply(stations$Station, get_station_details))
-  
-  # Do some more cleanup. Save the dataset as a file.
-  station_details <- station_details %>% 
-    mutate(overall.quality = gsub('^.* (\\w+) concern.*water-year (\\d+).*$', 
-                                  '\\1,\\2', overall.quality)) %>% 
-    separate(overall.quality, c('quality.level', 'quality.year'), ',', 
-             convert = TRUE, remove = FALSE) %>% 
-    select(-map.detail)
-  names(station_details) <- gsub('[.]+', '.', names(station_details))
   write.csv(station_details, file_name, row.names = FALSE)
 } else {
   station_details <- read_csv(file_name) %>% 
