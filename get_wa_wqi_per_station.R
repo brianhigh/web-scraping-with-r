@@ -208,6 +208,8 @@ if (!file.exists(file_name)) {
 file_name <- file.path(data_dir, 'station_details.csv')
 if (!file.exists(file_name)) {
   station_details <- bind_rows(lapply(stations$Station, get_station_details))
+  
+  # Do some more cleanup. Save the dataset as a file.
   station_details <- station_details %>% 
     mutate(overall.quality = gsub('^.* (\\w+) concern.*water-year (\\d+).*$', 
                                   '\\1,\\2', overall.quality)) %>% 
