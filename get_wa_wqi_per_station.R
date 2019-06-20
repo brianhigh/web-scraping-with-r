@@ -48,6 +48,12 @@ get_list_of_stations <- function () {
 }
 
 get_station_details <- function(Station) {
+  col_names <- c("type", "Ben.Use", "uwa", "ecoregion", "county", "contact",
+      "lat", "lon", "LLID", "Route.Measure", "river.mile", "substrate", "flow",
+      "gaging", "mixing", "elevation", "surrounding", "waterbody.id", 
+      "location.type", "overall.quality", "quality.level", "quality.year", 
+      "Station")
+  
   url <- 'https://fortress.wa.gov/ecy/eap/riverwq/station.asp'
   qstr <- paste('sta=', Station, sep='')
   url <- paste(url, qstr, sep = '?')
@@ -57,32 +63,32 @@ get_station_details <- function(Station) {
   lst <- xmlns %>% 
     html_nodes(xpath='.//table[contains(@width, "396")]') %>% 
     html_table(fill = TRUE, header = TRUE)
-  stn_det <- bind_cols(lst[[1]][1,], lst[[2]][1,])
-  names(stn_det) <- gsub('\\W', '.', names(stn_det))
-  stn_det$LLID <- as.character(stn_det$LLID)
-  stn_det$`waterbody.id` <- as.character(stn_det$`waterbody.id`)
+  df <- bind_cols(lst[[1]][1,], lst[[2]][1,])
+  names(df) <- gsub('\\W', '.', names(df))
+  df$LLID <- as.character(df$LLID)
+  df$`waterbody.id` <- as.character(df$`waterbody.id`)
   
   # Add a variable for the note about overall water quality.
   stn_qual <- xmlns %>% 
     html_nodes(xpath='.//td[contains(@align, "center")]') %>% 
     html_text()
   stn_qual <- grep('Overall water quality', stn_qual, value = TRUE)
-  stn_det$overall.quality <- ifelse(length(stn_qual) > 0, stn_qual, NA)
+  df$overall.quality <- ifelse(length(stn_qual) > 0, stn_qual, NA)
   
   # Add a variable for the station.
-  stn_det$Station <- Station
+  df$Station <- Station
   
   # Rename variables. Force longitude to be negative. Split overall quality.
-  stn_det <- stn_det %>% rename('lat' = 'latitude', 'lon' = 'longitude') %>% 
+  df <- df %>% rename('lat' = 'latitude', 'lon' = 'longitude') %>% 
     mutate(lon = ifelse(lon > 0, -lon, lon)) %>% 
     mutate(overall.quality = gsub('^.* (\\w+) concern.*water-year (\\d+).*$', 
                                   '\\1,\\2', overall.quality)) %>% 
     separate(overall.quality, c('quality.level', 'quality.year'), ',', 
              convert = TRUE, remove = FALSE) %>% 
     select(-map.detail)
-  names(stn_det) <- gsub('[.]+', '.', names(stn_det))
+  names(df) <- gsub('[.]+', '.', names(df))
   
-  return(stn_det)
+  return(df[, col_names])
 }
 
 get_wa_wqi_per_station <- function(Station = '') {
