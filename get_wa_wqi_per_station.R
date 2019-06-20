@@ -214,6 +214,7 @@ if (!file.exists(file_name)) {
     separate(overall.quality, c('quality.level', 'quality.year'), ',', 
              convert = TRUE, remove = FALSE) %>% 
     select(-map.detail)
+  names(station_details) <- gsub('[.]+', '.', names(station_details))
   write.csv(station_details, file_name, row.names = FALSE)
 } else {
   station_details <- read_csv(file_name) %>% 
