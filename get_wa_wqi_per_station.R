@@ -39,7 +39,7 @@ get_list_of_stations <- function () {
   stations <- stations[, 2:3]
   names(stations) <- c('Station', 'Station Name')
   
-  # Add a variable for station, using the class "Rsta" to infer "Long-term".
+  # Add a variable for station type, where class "Rsta" is for "Long-term".
   longterm <- xmlns %>% html_nodes("td.Rsta") %>% html_nodes("a.Rsta") %>% 
     html_text(trim = TRUE) %>% grep('[A-Z0-9]{6}', ., value = TRUE)
   stations <- stations %>% 
