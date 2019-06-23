@@ -3,9 +3,7 @@
 # License: MIT https://opensource.org/licenses/MIT (See LICENSE file.)
 # Repository: https://github.com/deohs/coders
 
-# Get daily smoke shapefiles from NOAA by year. We automate this task to 
-# avoid the tedium of downloading thousands of individual files manually.
-
+# Get daily NOAA SMOKE shapefiles from May through Sep. for the years 2008-2017.
 
 # -----
 # Setup
