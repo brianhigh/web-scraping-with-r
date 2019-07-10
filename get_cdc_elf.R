@@ -50,8 +50,28 @@ get_states <- function() {
   return(df)
 }
 
+clean_cdc_elf_data <- function(df) {
+  # Clean CDC ELF Data.
+  df <- df %>% 
+    filter(Year != 'Year', 
+           !grepl('Age|Subtotal|:', Age), 
+           !grepl('Male|FTE', Male), 
+           !grepl('Female|FTE', Female))  %>% 
+    mutate(Keep = ifelse(!is.na(Keep), FALSE, TRUE)) %>% 
+    mutate_all(na_if, "") %>% 
+    mutate(Year = na.locf(Year)) %>% 
+    filter(Keep) %>% select(-Keep) %>% 
+    mutate(Male = as.numeric(gsub(',', '', Male)),
+           Female = as.numeric(gsub(',', '', Female)))
+  df$Age <- as.factor(df$Age)
+  ordered(df$Age)
+  df$Age <- ordered(df$Age)
+  
+  return(df)
+}
+
 get_cdc_elf_data <- function(query) {
-  # Get CDC ELF Data
+  # Get CDC ELF Data.
   url <- 'https://wwwn.cdc.gov/wisards/cps/cps_estimates_results.aspx'
   referer <- 'https://wwwn.cdc.gov/wisards/cps/cps_estimates.aspx'
   useragent <- 'Mozilla/5.0'
@@ -65,21 +85,8 @@ get_cdc_elf_data <- function(query) {
   df <- as_tibble(lst[[1]][, 2:6])
   names(df) <- c('Year', 'Age', 'Male', 'Female', 'Keep')
   
-  # Clean Data.
-  df <- df %>% 
-    filter(Year != 'Year', 
-           !grepl('Age|Subtotal|:', Age), 
-           !grepl('Male|FTE', Male), 
-           !grepl('Female|FTE', Female))  %>% 
-    mutate(Keep = ifelse(!is.na(Keep), FALSE, TRUE)) %>% 
-    mutate_all(na_if, "") %>% 
-    mutate(Year = na.locf(Year)) %>% 
-    filter(Keep) %>% select(-Keep) %>% 
-    mutate(Male = as.numeric(gsub(',', '', Male)),
-           Female = as.numeric(gsub(',', '', Female)))
-    df$Age <- as.factor(df$Age)
-  ordered(df$Age)
-  df$Age <- ordered(df$Age)
+  # Clean data and add state FIPS code.
+  df <- clean_cdc_elf_data(df)
   df$StateFipsCodeID <- query$StateFipsCodeID
   
   return(df)
