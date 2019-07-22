@@ -3,6 +3,8 @@
 # License: MIT https://opensource.org/licenses/MIT (See LICENSE file.)
 # Repository: https://github.com/brianhigh/web-scraping-with-r
 
+# Get daily historical pollen index for a specific zip code and number of days.
+
 # Clear workspace of all objects and unload all extra (non-base) packages.
 rm(list = ls(all = TRUE))
 if (!is.null(sessionInfo()$otherPkgs)) {
@@ -38,6 +40,19 @@ get_pollen <- function(zip = 98104, days = '30') {
   return(pollen)
 }
 
-# Get historical pollen index for a specific zip code and number of days.
+# Define variables.
+data_dir <- 'data'
+output_file_name <- 'pollen.csv'
+zip <- '98105'
+days <- '60'
+
+# Create data folder if it does not exist.
+dir.create(data_dir, showWarnings = FALSE)
+
+# Get daily historical pollen index for a specific zip code and number of days.
 # Note: Maximum "days" provided by data source appears to be 365.
-get_pollen(zip = '98105', days = '60')
+pollen <- get_pollen(zip, days)
+
+# Save results in a CSV file.
+write.csv(pollen, file.path(data_dir, output_file_name), row.names = FALSE)
+
